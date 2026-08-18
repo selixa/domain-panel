@@ -6,9 +6,8 @@ require __DIR__ . '/includes/rdap.php';
 // Actions de rafraîchissement manuel (bouton dans l'interface)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'refresh_all') {
     csrf_check();
-    foreach (loadDomains() as $d) {
-        refreshDomainCache($d['domain'], true);
-    }
+    $allDomains = array_column(loadDomains(), 'domain');
+    refreshDomainsBatch($allDomains);
     header('Location: index.php?refreshed=1');
     exit;
 }
@@ -171,7 +170,7 @@ unset($_SESSION['flash_refresh_token']);
                             $cached = $row['cached'];
                             ?>
                             <tr>
-                                <td>
+                                <td data-label="Domaine">
                                     <strong><?= htmlspecialchars($d['domain']) ?></strong>
                                     <?php if ($cached && !empty($cached['nameservers'])): ?>
                                         <div class="cell-sub"><?= count($cached['nameservers']) ?> nameserver(s)</div>
@@ -187,16 +186,16 @@ unset($_SESSION['flash_refresh_token']);
                                         </div>
                                     <?php endif; ?>
                                 </td>
-                                <td><?= htmlspecialchars($d['project'] ?: '—') ?></td>
-                                <td><?= htmlspecialchars($d['registrar'] ?: '—') ?></td>
-                                <td>
+                                <td data-label="Projet"><?= htmlspecialchars($d['project'] ?: '—') ?></td>
+                                <td data-label="Registrar"><?= htmlspecialchars($d['registrar'] ?: '—') ?></td>
+                                <td data-label="Expire le">
                                     <?php if ($row['expiration']): ?>
                                         <?= htmlspecialchars(date('d/m/Y', strtotime($row['expiration']))) ?>
                                     <?php else: ?>
                                         —
                                     <?php endif; ?>
                                 </td>
-                                <td>
+                                <td data-label="Statut">
                                     <span class="badge badge-<?= $row['status'] ?>">
                                         <?= $statusLabels[$row['status']] ?>
                                         <?php if ($row['daysLeft'] !== null): ?>
@@ -204,10 +203,10 @@ unset($_SESSION['flash_refresh_token']);
                                         <?php endif; ?>
                                     </span>
                                 </td>
-                                <td><?= !empty($d['auto_renew']) ? '✅' : '❌' ?></td>
-                                <td><?= $d['cost'] !== null ? number_format((float) $d['cost'], 2, ',', ' ') . ' €' : '—' ?></td>
-                                <td class="cell-notes"><?= htmlspecialchars($d['notes'] ?: '') ?></td>
-                                <td class="cell-actions">
+                                <td data-label="Auto-renew"><?= !empty($d['auto_renew']) ? '✅' : '❌' ?></td>
+                                <td data-label="Coût/an"><?= $d['cost'] !== null ? number_format((float) $d['cost'], 2, ',', ' ') . ' €' : '—' ?></td>
+                                <td data-label="Notes" class="cell-notes"><?= htmlspecialchars($d['notes'] ?: '') ?></td>
+                                <td data-label="Actions" class="cell-actions">
                                     <a href="edit-domain.php?id=<?= htmlspecialchars($d['id']) ?>" class="btn-icon" title="Modifier">&#9998;&#xFE0E;</a>
                                     <form method="post" style="display:inline">
                                         <?= csrf_field() ?>

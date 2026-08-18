@@ -58,6 +58,12 @@ function fetchRdap(string $domain): ?array
     curl_close($ch);
 
     if ($body === false || $httpCode !== 200) {
+        if ($httpCode === 429) {
+            return [
+                'ok' => false,
+                'error' => 'HTTP 429 — rdap.org limite à 10 requêtes/10s, réessaie dans quelques secondes',
+            ];
+        }
         return [
             'ok' => false,
             'error' => $curlError ?: ('HTTP ' . $httpCode),
@@ -159,4 +165,30 @@ function getCachedExpiration(string $domain): ?array
 {
     $cache = loadCache();
     return $cache[$domain] ?? null;
+}
+
+/**
+ * Rafraîchit plusieurs domaines à la suite, avec une petite pause entre
+ * chaque requête RDAP pour rester sous la limite de rdap.org (10 requêtes
+ * par 10 secondes côté Cloudflare). Sans cette pause, les derniers domaines
+ * d'une longue liste se prennent une erreur 429 lors d'un "Tout rafraîchir".
+ *
+ * @param string[] $domains
+ * @return array<string, array> résultats indexés par nom de domaine
+ */
+function refreshDomainsBatch(array $domains, bool $force = true, int $delayMicroseconds = 350000): array
+{
+    $results = [];
+    $first = true;
+
+    foreach ($domains as $domain) {
+        if (!$first) {
+            usleep($delayMicroseconds);
+        }
+        $first = false;
+
+        $results[$domain] = refreshDomainCache($domain, $force);
+    }
+
+    return $results;
 }

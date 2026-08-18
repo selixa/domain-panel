@@ -308,3 +308,64 @@ tr:last-child td { border-bottom: none; }
 }
 
 .form button:hover { background: var(--primary-hover); }
+
+/* Tableau responsive : passe en cartes empilées sous ~760px pour éviter
+   le scroll horizontal sur mobile ou fenêtre étroite. */
+@media (max-width: 760px) {
+    .page { padding: 20px 12px 60px; }
+
+    .table-wrap { overflow-x: visible; padding: 12px; }
+
+    table, thead, tbody, tr, td, th {
+        display: block;
+        width: 100%;
+    }
+
+    thead { display: none; }
+
+    tbody tr {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 4px 0;
+        margin-bottom: 12px;
+    }
+
+    tbody tr:last-child { margin-bottom: 0; }
+
+    td {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 8px 14px;
+        border-bottom: 1px solid var(--border);
+        white-space: normal;
+    }
+
+    tr td:last-child { border-bottom: none; }
+
+    td::before {
+        content: attr(data-label);
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: var(--text-dim);
+        flex-shrink: 0;
+        padding-top: 2px;
+    }
+
+    td[data-label="Domaine"] {
+        display: block;
+        background: rgba(255, 255, 255, 0.02);
+    }
+    td[data-label="Domaine"]::before { display: none; }
+
+    td[data-label="Actions"] {
+        justify-content: flex-end;
+        gap: 6px;
+    }
+    td[data-label="Actions"]::before { display: none; }
+
+    .cell-notes { max-width: none; text-align: right; }
+}

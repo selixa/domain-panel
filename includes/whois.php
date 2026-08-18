@@ -15,6 +15,7 @@ const WHOIS_SERVERS = [
     'sh' => ['whois.nic.sh'],
     'ac' => ['whois.nic.ac'],
     'to' => ['whois.tonic.to'],
+    'pl' => ['whois.dns.pl'],
 ];
 
 function whoisTld(string $domain): string

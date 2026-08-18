@@ -20,15 +20,14 @@ if (empty($domains)) {
     exit;
 }
 
-$results = [];
-foreach ($domains as $d) {
-    $entry = refreshDomainCache($d['domain'], true);
-    $results[] = $d['domain'] . ' -> ' . (
+$domainNames = array_column($domains, 'domain');
+$results = refreshDomainsBatch($domainNames);
+
+echo "Rafraîchissement terminé — " . count($domains) . " domaine(s) — " . date('Y-m-d H:i:s') . "\n\n";
+foreach ($results as $domain => $entry) {
+    echo $domain . ' -> ' . (
         ($entry['ok'] ?? false)
             ? 'OK (expire le ' . ($entry['expiration'] ?? '?') . ')'
             : 'ERREUR (' . ($entry['error'] ?? 'inconnue') . ')'
-    );
+    ) . "\n";
 }
-
-echo "Rafraîchissement terminé — " . count($domains) . " domaine(s) — " . date('Y-m-d H:i:s') . "\n\n";
-echo implode("\n", $results) . "\n";
